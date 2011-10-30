@@ -1,0 +1,48 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.17+ wizard for JavaCC 1.5.0+
+ */options{  JDK_VERSION = "1.5";  static = false;}PARSER_BEGIN(Expr)package org.coderj.jel.expr;
+
+import org.coderj.jel.context.ExprContext;
+
+public class Expr{
+  private ExprContext ctx;
+  public Expr(String expr, ExprContext ctx)  {
+    this(new java.io.ByteArrayInputStream(expr.getBytes()));    this.ctx=ctx;
+  }
+  public int eval() throws ParseException  {	return process();
+  }}PARSER_END(Expr)SKIP :{  " "| "\r"| "\t"| "\n"}TOKEN : /* OPERATORS */{  < PLUS : "+" >| < MINUS : "-" >| < MULTIPLY : "*" >| < DIVIDE : "/" >}TOKEN :{  < CONSTANT : (< DIGIT >)+ >| < #DIGIT : [ "0"-"9" ] >}
+
+TOKEN:{  < VARIABLE:(< LETTER >)+ >
+| < #LETTER:["a"-"z", "_", "A"-"Z"] >}int process() :{int value=0;}{  value=sum() ";"  {    return value;  }| ";"  {    return -1;  }}int sum() :{
+  int left, right;
+  }{  left=term()    (      < PLUS > right=term()
+      {        return left+right;
+      }    | < MINUS > right=term()
+      {      	return left-right;
+     } 	)}int term() :{
+  int left=0;
+  int right=0;
+  int value=0;
+  }{  left=element()  {    value=left;
+  }   (      (      < MULTIPLY >right=element()
+      {        value=left*right;
+      }    | < DIVIDE >right=element()
+    {      value=left/right;
+    }    )
+  )*  {    return value;
+  }}int element() :{
+Token t;
+int value=0;
+  }{  t=< CONSTANT >  {    return Integer.parseInt(t.image);
+  }| "(" value=sum() ")"  {    return value;
+  }
+| value=variable()
+  {    return value;
+  }}
+
+int variable():
+{
+  Token t;}
+{	t=< VARIABLE >	{		return ctx.getValue(t.image);
+	}	  
+}
